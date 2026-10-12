@@ -81,4 +81,53 @@ class OpenRouterJsonParsingTest {
         assertThat(client.parseCards(null)).isEmpty();
         assertThat(client.parseCards("")).isEmpty();
     }
+
+    @Test
+    void parsesCardsFromProseWithoutFences() {
+        String raw = "Aqui estao os flashcards que preparei:\n"
+                + "{\"cards\":[{\"type\":\"CLOZE\",\"question\":\"q\",\"options\":[],\"answer\":\"a\"}]}\n"
+                + "Bons estudos!";
+
+        List<GeneratedCard> cards = client.parseCards(raw);
+
+        assertThat(cards).hasSize(1);
+        assertThat(cards.get(0).type()).isEqualTo("CLOZE");
+    }
+
+    @Test
+    void parsesCardsWithUnquotedFieldNamesAndSingleQuotes() {
+        String raw = "{cards:[{type:'CLOZE',question:'q',options:[],answer:'a',explanation:'e'}]}";
+
+        List<GeneratedCard> cards = client.parseCards(raw);
+
+        assertThat(cards).hasSize(1);
+        assertThat(cards.get(0).type()).isEqualTo("CLOZE");
+        assertThat(cards.get(0).answer()).isEqualTo("a");
+    }
+
+    @Test
+    void parsesCardsWithTrailingCommas() {
+        String raw = "{\"cards\":[{\"type\":\"TRUE_FALSE\",\"question\":\"q\",\"options\":[],"
+                + "\"answer\":\"Verdadeiro\",},],}";
+
+        List<GeneratedCard> cards = client.parseCards(raw);
+
+        assertThat(cards).hasSize(1);
+        assertThat(cards.get(0).type()).isEqualTo("TRUE_FALSE");
+    }
+
+    @Test
+    void parsesCardsFromBareTopLevelArray() {
+        String raw = "[{\"type\":\"MULTIPLE_CHOICE\",\"question\":\"q\",\"options\":[\"A\",\"B\"],\"answer\":\"A\"}]";
+
+        List<GeneratedCard> cards = client.parseCards(raw);
+
+        assertThat(cards).hasSize(1);
+        assertThat(cards.get(0).options()).containsExactly("A", "B");
+    }
+
+    @Test
+    void returnsEmptyOnUnbalancedBraces() {
+        assertThat(client.parseCards("{\"cards\":[{\"type\":\"CLOZE\"")).isEmpty();
+    }
 }

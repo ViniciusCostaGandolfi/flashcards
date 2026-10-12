@@ -16,8 +16,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 
+import tools.jackson.core.json.JsonReadFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 /**
  * Cliente real do OpenRouter. Registrado apenas quando
@@ -28,6 +30,20 @@ import tools.jackson.databind.ObjectMapper;
 public class RealOpenRouterClient implements OpenRouterClient {
 
     private static final Logger log = LoggerFactory.getLogger(RealOpenRouterClient.class);
+
+    /**
+     * Mapper tolerante para o JSON (nem sempre estrito) devolvido pelos modelos:
+     * aceita chaves sem aspas, aspas simples, virgulas finais e comentarios.
+     * Nao substitui o mapper global da aplicacao.
+     */
+    private static final ObjectMapper LENIENT_MAPPER = JsonMapper.builder()
+            .enable(JsonReadFeature.ALLOW_TRAILING_COMMA,
+                    JsonReadFeature.ALLOW_SINGLE_QUOTES,
+                    JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES,
+                    JsonReadFeature.ALLOW_JAVA_COMMENTS,
+                    JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS,
+                    JsonReadFeature.ALLOW_BACKSLASH_ESCAPING_ANY_CHARACTER)
+            .build();
 
     private static final String EXTRACTION_INSTRUCTION =
             "Transcreva fielmente TODO o texto contido no material a seguir. "
@@ -74,11 +90,24 @@ public class RealOpenRouterClient implements OpenRouterClient {
                 + "MATERIAL:\n" + (text == null ? "" : text);
 
         Map<String, Object> message = Map.of("role", "user", "content", prompt);
-        JsonNode response = chat(Map.of(
-                "model", model,
-                "messages", List.of(message)));
-        String raw = contentOf(response);
-        return parseCards(raw);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("model", model);
+        body.put("messages", List.of(message));
+
+        // Pede JSON ao provedor (aumenta muito a aderencia). Se o modelo nao
+        // suportar response_format, cai para a chamada simples.
+        Map<String, Object> jsonBody = new HashMap<>(body);
+        jsonBody.put("response_format", Map.of("type", "json_object"));
+
+        JsonNode response;
+        try {
+            response = chat(jsonBody);
+        } catch (RuntimeException ex) {
+            log.warn("openrouter_json_mode_failed_retrying_plain error={}", ex.getMessage());
+            response = chat(body);
+        }
+        return parseCards(contentOf(response));
     }
 
     // ------------------------------------------------------------------
@@ -131,16 +160,22 @@ public class RealOpenRouterClient implements OpenRouterClient {
         throw new IllegalStateException("Resposta do OpenRouter sem conteudo textual");
     }
 
-    /** Parse defensivo de {@code {"cards":[...]}} tolerando cercas ```json. */
+    /** Parse defensivo de {@code {"cards":[...]}} tolerando ruido, cercas e JSON frouxo. */
     List<GeneratedCard> parseCards(String raw) {
-        String cleaned = stripFences(raw);
+        String json = extractJson(raw);
         List<GeneratedCard> cards = new ArrayList<>();
-        if (cleaned == null || cleaned.isBlank()) {
+        if (json == null || json.isBlank()) {
             return cards;
         }
         try {
-            JsonNode root = objectMapper.readTree(cleaned);
+            JsonNode root = LENIENT_MAPPER.readTree(json);
             JsonNode array = root.path("cards");
+            if (!array.isArray()) {
+                array = root.path("flashcards");
+            }
+            if (!array.isArray() && root.isArray()) {
+                array = root;
+            }
             if (!array.isArray()) {
                 return cards;
             }
@@ -178,25 +213,58 @@ public class RealOpenRouterClient implements OpenRouterClient {
         return value.isTextual() ? value.asText() : null;
     }
 
-    /** Remove cercas de codigo e ruido ao redor do JSON. */
-    private String stripFences(String raw) {
+    /**
+     * Extrai o primeiro objeto/array JSON balanceado, tolerando cercas de codigo
+     * (com ou sem linguagem), BOM e texto antes/depois. Varredura por
+     * profundidade que respeita strings (aspas duplas ou simples) e escapes.
+     */
+    private String extractJson(String raw) {
         if (raw == null) {
             return null;
         }
-        String cleaned = raw.trim();
-        if (cleaned.startsWith("```")) {
-            int newline = cleaned.indexOf('\n');
-            cleaned = newline >= 0 ? cleaned.substring(newline + 1) : cleaned.substring(3);
-            if (cleaned.endsWith("```")) {
-                cleaned = cleaned.substring(0, cleaned.length() - 3);
+        String s = raw.strip();
+        if (!s.isEmpty() && s.charAt(0) == '\uFEFF') {
+            s = s.substring(1).strip();
+        }
+        int start = -1;
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '{' || c == '[') {
+                start = i;
+                break;
             }
-            cleaned = cleaned.trim();
         }
-        int start = cleaned.indexOf('{');
-        int end = cleaned.lastIndexOf('}');
-        if (start >= 0 && end > start) {
-            cleaned = cleaned.substring(start, end + 1);
+        if (start < 0) {
+            return s;
         }
-        return cleaned;
+        int depth = 0;
+        char quote = 0;
+        boolean escape = false;
+        for (int i = start; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (quote != 0) {
+                if (escape) {
+                    escape = false;
+                } else if (c == '\\') {
+                    escape = true;
+                } else if (c == quote) {
+                    quote = 0;
+                }
+                continue;
+            }
+            if (c == '"' || c == '\'') {
+                quote = c;
+                continue;
+            }
+            if (c == '{' || c == '[') {
+                depth++;
+            } else if (c == '}' || c == ']') {
+                depth--;
+                if (depth == 0) {
+                    return s.substring(start, i + 1);
+                }
+            }
+        }
+        return s.substring(start);
     }
 }
