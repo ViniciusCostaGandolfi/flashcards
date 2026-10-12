@@ -38,7 +38,11 @@ app:
     api-key: ${OPENROUTER_API_KEY}
     reader-model: ${OPENROUTER_READER_MODEL:google/gemini-2.5-flash}
     generator-model: ${OPENROUTER_GENERATOR_MODEL:deepseek/deepseek-v4.1-flash}
-    base-prompt: ${APP_OPENROUTER_BASE_PROMPT:}
+    # base-prompt: HARDCODED no application.yaml (default pt-BR). Nao ler de env
+    # porque o Coolify injeta vars de build como ARG no Dockerfile e um prompt
+    # longo com espacos/aspas quebra o parse. Em runtime o prompt pode ser
+    # editado na tela /settings (persistido no DB); o GenerationService usa
+    # firstNonBlank(settings.getBasePrompt(), properties.basePrompt()).
     referer: ${OPENROUTER_REFERER:}
     title: ${OPENROUTER_TITLE:Flashcards}
   s3:
