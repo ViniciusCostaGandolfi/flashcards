@@ -63,7 +63,7 @@ export default function GeneratePage() {
 
   const job: GenerationJob | undefined = jobQuery.data;
 
-  // Quando concluir, atualiza baralhos, arquivos e tags.
+  // Quando concluir, atualiza Cards, arquivos e tags.
   if (job?.status === "DONE") {
     void queryClient.invalidateQueries({ queryKey: ["decks"] });
     void queryClient.invalidateQueries({ queryKey: ["files"] });
@@ -99,7 +99,7 @@ export default function GeneratePage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Gerar cartões"
-        subtitle="Envie uma imagem, um PDF ou um texto e a IA cria o baralho."
+        subtitle="Envie uma imagem, um PDF ou um texto e a IA cria o Card."
       />
 
       {jobId ? (
@@ -266,7 +266,7 @@ function GenerationProgress({
 
         {status === "FAILED" ? (
           <div role="alert" className="alert alert-error">
-            <span className="font-semibold">Não foi possível gerar o baralho.</span>
+            <span className="font-semibold">Não foi possível gerar o Card.</span>
             {job?.errorMessage ? (
               <span className="text-sm">{job.errorMessage}</span>
             ) : null}
@@ -293,7 +293,7 @@ function GenerationProgress({
         {status === "DONE" ? (
           <div className="alert alert-success">
             <div className="flex flex-col gap-1">
-              <span className="font-semibold">Baralho criado!</span>
+              <span className="font-semibold">Card criado!</span>
               <span className="text-sm">
                 {job?.cardsCount ?? 0} cartões gerados.
               </span>
@@ -312,7 +312,7 @@ function GenerationProgress({
           </button>
           {status === "DONE" && job?.deckId ? (
             <Link to={`/decks/${job.deckId}`} className="btn btn-primary">
-              Ver baralho
+              Ver Card
             </Link>
           ) : null}
         </div>

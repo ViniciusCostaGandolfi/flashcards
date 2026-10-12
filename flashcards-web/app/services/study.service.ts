@@ -2,7 +2,7 @@ import { api } from "~/lib/api";
 import type { Card } from "~/types/api";
 
 /**
- * Cartões devidos. Sem `deckId` retorna de todos os baralhos.
+ * Cartões devidos. Sem `deckId` retorna de todos os Cards.
  * `tag` filtra por nome de tag.
  */
 export const getDueCards = async (

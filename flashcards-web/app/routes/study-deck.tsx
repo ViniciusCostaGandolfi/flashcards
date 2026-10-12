@@ -49,7 +49,7 @@ export default function StudyDeckPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2 text-sm">
         <Link to="/decks" className="link link-hover text-base-content/60">
-          Baralhos
+          Cards
         </Link>
         <span aria-hidden="true" className="text-base-content/40">
           /
@@ -71,7 +71,7 @@ export default function StudyDeckPage() {
         subtitle={
           tagFilter
             ? `Cartões devidos com a tag #${tagFilter}.`
-            : "Cartões devidos deste baralho."
+            : "Cartões devidos deste Card."
         }
       />
 
@@ -90,7 +90,7 @@ export default function StudyDeckPage() {
         <StudySession
           cards={cards}
           backTo={`/decks/${deckId}`}
-          backLabel="Voltar ao baralho"
+          backLabel="Voltar ao Card"
           emptyMessage={
             tagFilter
               ? `Nenhum cartão devido com a tag #${tagFilter}.`

@@ -16,7 +16,7 @@ export default defineConfig({
         name: "Flashcards",
         short_name: "Flashcards",
         description:
-          "Flashcards — gere baralhos a partir de imagens, PDFs ou textos e estude com repetição espaçada.",
+          "Flashcards — gere Cards a partir de imagens, PDFs ou textos e estude com repetição espaçada.",
         lang: "pt-BR",
         theme_color: "#2563eb",
         background_color: "#0f172a",

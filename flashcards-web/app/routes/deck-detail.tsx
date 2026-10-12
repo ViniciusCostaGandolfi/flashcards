@@ -127,7 +127,7 @@ export default function DeckDetailPage() {
     <div className="flex flex-col gap-6">
       <div className="flex items-center gap-2 text-sm">
         <Link to="/decks" className="link link-hover text-base-content/60">
-          Baralhos
+          Cards
         </Link>
         <span aria-hidden="true" className="text-base-content/40">
           /
@@ -136,7 +136,7 @@ export default function DeckDetailPage() {
       </div>
 
       <PageHeader
-        title={deck?.title ?? "Baralho"}
+        title={deck?.title ?? "Card"}
         subtitle={
           deck
             ? `${deck.cardsCount} cartões · ${deck.dueCount} para revisar hoje`
@@ -197,7 +197,7 @@ export default function DeckDetailPage() {
             />
           ) : (
             <EmptyState
-              message="Nenhum cartão neste baralho."
+              message="Nenhum cartão neste Card."
               hint="Adicione um cartão manualmente para começar."
               action={
                 <button
@@ -320,9 +320,9 @@ export default function DeckDetailPage() {
 
       <ConfirmDialog
         open={deleteDeckOpen}
-        title="Excluir baralho"
-        message="Excluir o baralho apaga todos os seus cartões. Deseja continuar?"
-        confirmLabel="Excluir baralho"
+        title="Excluir Card"
+        message="Excluir o Card apaga todos os seus cartões. Deseja continuar?"
+        confirmLabel="Excluir Card"
         danger
         isLoading={deleteDeckMutation.isPending}
         onConfirm={() => deleteDeckMutation.mutate()}

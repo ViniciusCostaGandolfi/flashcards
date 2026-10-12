@@ -17,11 +17,11 @@ export default function DecksPage() {
   return (
     <div className="flex flex-col gap-6">
       <PageHeader
-        title="Baralhos"
-        subtitle="Todos os seus baralhos de estudo."
+        title="Cards"
+        subtitle="Todos os seus Cards de estudo."
         actions={
           <Link to="/generate" className="btn btn-primary btn-sm">
-            Novo baralho
+            Novo Card
           </Link>
         }
       />
@@ -34,7 +34,7 @@ export default function DecksPage() {
       >
         {decks.length === 0 ? (
           <EmptyState
-            message="Você ainda não tem baralhos."
+            message="Você ainda não tem Cards."
             hint="Gere o primeiro a partir de uma imagem, PDF ou texto."
             action={
               <Link to="/generate" className="btn btn-primary btn-sm">

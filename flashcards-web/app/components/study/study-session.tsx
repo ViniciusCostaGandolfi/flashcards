@@ -18,9 +18,9 @@ interface StudySessionProps {
 export function StudySession({
   cards,
   backTo = "/decks",
-  backLabel = "Voltar aos baralhos",
+  backLabel = "Voltar aos Cards",
   emptyMessage = "Nada para estudar agora!",
-  emptyHint = "Você não tem cartões devidos. Volte mais tarde ou gere novos baralhos.",
+  emptyHint = "Você não tem cartões devidos. Volte mais tarde ou gere novos Cards.",
 }: StudySessionProps) {
   const [index, setIndex] = useState(0);
   const queryClient = useQueryClient();

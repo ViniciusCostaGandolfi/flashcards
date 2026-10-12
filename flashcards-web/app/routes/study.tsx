@@ -42,7 +42,7 @@ export default function StudyPage() {
         subtitle={
           tagFilter
             ? `Revisão dos cartões com a tag #${tagFilter}.`
-            : "Revisão de todos os baralhos."
+            : "Revisão de todos os Cards."
         }
       />
 

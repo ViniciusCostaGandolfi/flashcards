@@ -18,7 +18,7 @@ export default function FilesPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="Arquivos"
-        subtitle="Materiais enviados e os baralhos gerados a partir deles."
+        subtitle="Materiais enviados e os Cards gerados a partir deles."
         actions={
           <Link to="/generate" className="btn btn-primary btn-sm">
             Enviar arquivo

@@ -11,6 +11,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import vgandolfi.dev.flashcards.domain.model.enums.GenerationStatus;
 import vgandolfi.dev.flashcards.domain.model.enums.SourceType;
 
@@ -41,8 +43,13 @@ public class GenerationJob extends BaseEntity {
     @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
+    /**
+     * Deck resultante da geracao. Nulo enquanto {@code PENDING} e tambem
+     * quando o deck e excluido (FK {@code ON DELETE SET NULL}, ver V8).
+     */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "deck_id")
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private Deck deck;
 
     @Enumerated(EnumType.STRING)

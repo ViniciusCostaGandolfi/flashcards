@@ -87,7 +87,7 @@ export default function FileDetailPage() {
               actions={
                 file.deckId ? (
                   <Link to={`/decks/${file.deckId}`} className="btn btn-primary btn-sm">
-                    Ver baralho
+                    Ver Card
                   </Link>
                 ) : null
               }
@@ -113,12 +113,12 @@ export default function FileDetailPage() {
               </div>
             ) : null}
 
-            {/* Baralho gerado */}
+            {/* Card gerado */}
             {file.deck ? (
               <div className="card card-border border-base-200 bg-base-100">
                 <div className="card-body gap-2">
                   <h2 className="font-display text-lg font-bold">
-                    Baralho gerado
+                    Card gerado
                   </h2>
                   <p className="text-sm text-base-content/70">
                     {file.deck.title} · {file.deck.cardsCount} cartões

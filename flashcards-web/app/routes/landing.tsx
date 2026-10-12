@@ -62,7 +62,7 @@ const FEATURES = [
     icon: <IconPhoto />,
     title: "Imagem, PDF ou texto",
     description:
-      "Apostilas, slides e anotações viram baralhos no mesmo fluxo, sem trabalho manual.",
+      "Apostilas, slides e anotações viram Cards no mesmo fluxo, sem trabalho manual.",
   },
   {
     icon: <IconBolt />,
@@ -149,7 +149,7 @@ export default function LandingPage() {
               <span className="gradient-text">flashcards</span>
             </h1>
             <p className="max-w-xl animate-fade-in-up text-lg text-base-content/70 delay-200">
-              Envie uma imagem, um PDF ou um texto e receba um baralho pronto.
+              Envie uma imagem, um PDF ou um texto e receba um Card pronto.
               Estude no celular com revisões que se adaptam ao seu ritmo.
             </p>
             <div className="animate-fade-in-up delay-300 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
@@ -228,7 +228,7 @@ export default function LandingPage() {
               <div className="text-left">
                 <p className="font-semibold">A IA gera os cartões</p>
                 <p className="text-sm text-base-content/60">
-                  Um baralho completo, formatado e pronto para revisão.
+                  Um Card completo, formatado e pronto para revisão.
                 </p>
               </div>
             </li>
@@ -252,7 +252,7 @@ export default function LandingPage() {
               Pronto para estudar melhor?
             </h2>
             <p className="mt-2 max-w-xl text-primary-content/80">
-              Crie seu primeiro baralho em menos de um minuto.
+              Crie seu primeiro Card em menos de um minuto.
             </p>
             <div className="card-actions mt-6 flex-col gap-3 sm:flex-row">
               <Link to="/login" className="btn btn-lg bg-base-100 text-base-content">
@@ -274,7 +274,7 @@ export default function LandingPage() {
           <aside className="max-w-sm">
             <img src="/logo.svg" alt="Logo Flashcards" className="h-10 w-10 rounded-box" />
             <p className="text-sm text-base-content/70">
-              Flashcards — gere e estude baralhos com inteligência artificial e
+              Flashcards — gere e estude Cards com inteligência artificial e
               repetição espaçada.
             </p>
           </aside>

@@ -116,7 +116,7 @@ export function Layout({ children }: { children: ReactNode }) {
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
         <meta name="theme-color" content="#2563eb" />
-        <meta name="description" content="Flashcards — gere e estude baralhos com repetição espaçada." />
+        <meta name="description" content="Flashcards — gere e estude Cards com repetição espaçada." />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="Flashcards" />
         <meta
