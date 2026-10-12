@@ -1,0 +1,51 @@
+# Perfil "test" -- H2 em memoria, sem console web, mesma validacao de schema.
+# Mantem OpenRouter sem api-key (mock) e S3 apontando para localhost (o boot
+# tolera ausencia do MinIO).
+spring:
+  config:
+    activate:
+      on-profile: test
+
+  datasource:
+    url: jdbc:h2:mem:flashcards-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  h2:
+    console:
+      enabled: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+app:
+  jwt:
+    secret: flashcards-test-secret-change-me-0123456789
+    expiration: 86400000
+    refresh-expiration: 604800000
+  user:
+    email: vinicius@vgandolfi.dev
+    password: admin123
+  frontend:
+    url: http://localhost:3000
+  openrouter:
+    url: https://openrouter.ai/api/v1
+    api-key: ""
+    reader-model: google/gemini-2.5-flash
+    generator-model: deepseek/deepseek-v4.1-flash
+    base-prompt: Gere flashcards em pt-BR a partir do material.
+    referer: http://localhost:3000
+    title: Flashcards
+  s3:
+    endpoint: http://localhost:9000
+    access-key: test
+    secret-key: test
+    bucket: flashcards-test
+    region: us-east-1

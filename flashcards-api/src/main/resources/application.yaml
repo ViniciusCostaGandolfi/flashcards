@@ -1,0 +1,91 @@
+# =============================================================================
+# Configuracao base (vale para TODOS os profiles). Hierarquia:
+#   application.yaml      -> base com defaults de DESENVOLVIMENTO LOCAL
+#                            (H2 em memoria + console habilitado).
+#   application-dev.yaml  -> overlay do profile dev (PostgreSQL do compose).
+#   application-prod.yaml -> overlay do profile prod (env obrigatorias, fail-fast).
+#   application-test.yaml -> profile de teste (H2 MODE=PostgreSQL).
+#
+# REGRA: em yml de profile, chaves vindas de env DEVEM usar ${VAR:default}.
+# Precedencia: env var > application-{profile}.yaml > application.yaml.
+# =============================================================================
+spring:
+  application:
+    name: flashcards
+
+  # Perfil default = desenvolvimento local: H2 em memoria (PostgreSQL mode).
+  datasource:
+    url: jdbc:h2:mem:flashcards;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      validation-timeout: 5000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 30MB
+
+  profiles:
+    active:
+      - '@spring.profiles.active@'
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui/index.html
+
+app:
+  jwt:
+    # Placeholder APENAS para dev. Em producao e obrigatorio via JWT_SECRET.
+    # Minimo de 32 caracteres (HS256).
+    secret: ${JWT_SECRET:flashcards-dev-secret-change-me-0123456789}
+    expiration: 86400000
+    refresh-expiration: 604800000
+  user:
+    # Usuario unico semeado no boot (UserInitializer). Em prod e obrigatorio.
+    email: ${APP_USER_EMAIL:}
+    password: ${APP_USER_PASSWORD:}
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:3000}
+  openrouter:
+    url: ${OPENROUTER_URL:https://openrouter.ai/api/v1}
+    # Em branco => MockOpenRouterClient (dev/test). Preenchido => cliente real.
+    api-key: ${OPENROUTER_API_KEY:}
+    reader-model: ${OPENROUTER_READER_MODEL:google/gemini-2.5-flash}
+    generator-model: ${OPENROUTER_GENERATOR_MODEL:deepseek/deepseek-v4.1-flash}
+    # Override via env: APP_OPENROUTER_BASE_PROMPT.
+    base-prompt: >-
+      Voce e um gerador de flashcards em portugues do Brasil. A partir do MATERIAL fornecido, gere pelo menos 3 flashcards, com pelo menos um de cada tipo. Tipos: CLOZE (frase com lacuna(s) no formato {{c1::resposta}}; liste em options as alternativas de preenchimento); TRUE_FALSE (afirmacao cujo answer deve ser exatamente Verdadeiro ou Falso); MULTIPLE_CHOICE (pergunta com 4 alternativas em options e exatamente uma correta em answer, que deve ser igual a alternativa correta). Cada item pode incluir opcionalmente "tags" (array de 1 a 3 palavras-chave curtas do tema). Baseie as respostas ESTRITAMENTE no material fornecido, sem inventar fatos. Responda SOMENTE com um JSON valido no formato exato {"cards":[{"type":"CLOZE|TRUE_FALSE|MULTIPLE_CHOICE","question":"...","options":["..."],"answer":"...","explanation":"...","tags":["..."]}]} , sem texto antes ou depois e sem cercas de codigo.
+    referer: ${OPENROUTER_REFERER:http://localhost:3000}
+    title: ${OPENROUTER_TITLE:Flashcards}
+  s3:
+    endpoint: ${S3_ENDPOINT:http://localhost:9000}
+    access-key: ${S3_ACCESS_KEY:minioadmin}
+    secret-key: ${S3_SECRET_KEY:minioadmin}
+    bucket: ${S3_BUCKET_NAME:flashcards}
+    region: ${S3_REGION:us-east-1}

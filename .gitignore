@@ -1,0 +1,15 @@
+# Environment
+.env
+.env.*
+!.env.example
+
+# Build / deps
+**/target/
+**/node_modules/
+**/build/
+**/dist/
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store

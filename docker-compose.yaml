@@ -1,0 +1,112 @@
+# ==============================================================================
+# Flashcards — docker-compose de PRODUÇÃO (deploy em VPS/Coolify)
+# ------------------------------------------------------------------------------
+# Stack: PostgreSQL + MinIO (bucket de arquivos) + API (Spring Boot) + Web (React
+# Router SSR).
+#
+# TODAS as variáveis são lidas do arquivo `.env` na RAIZ do repositório.
+# Segredos usam `${VAR:?mensagem}`: se faltar no .env, o compose falha na
+# interpolação (evita subir com valor vazio).
+#
+# Uso:
+#   cp .env.example .env   # e preencha os valores
+#   docker compose up -d --build
+#
+# Roteamento de domínio (reverse proxy / Cloudflare / Coolify):
+#   https://flashcards.vgandolfi.dev      -> web:3000
+#   https://api-flashcards.vgandolfi.dev  -> api:8080
+#
+# Para rodar a API/Web em modo dev fora do Docker, veja flashcards-api/.env.example
+# e flashcards-web/.env.example.
+# ==============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: flashcards-postgres
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Bucket S3-compatível para os arquivos enviados (imagens/PDFs).
+  # O bucket é criado automaticamente no boot da API (S3Config.ensureBucketExists).
+  minio:
+    image: minio/minio:latest
+    container_name: flashcards-minio
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin}
+    volumes:
+      - miniodata:/data
+
+  api:
+    build:
+      context: ./flashcards-api
+      dockerfile: Dockerfile
+    container_name: flashcards-api
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      # Secrets obrigatórios: sem valor no .env => interpolação falha
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET e obrigatorio no .env}
+      APP_USER_EMAIL: ${APP_USER_EMAIL:?APP_USER_EMAIL e obrigatorio no .env}
+      APP_USER_PASSWORD: ${APP_USER_PASSWORD:?APP_USER_PASSWORD e obrigatorio no .env}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?OPENROUTER_API_KEY e obrigatorio no .env}
+      # CORS: precisa bater com a origem do web
+      FRONTEND_URL: ${FRONTEND_URL}
+      # OpenRouter (models trocáveis por env; também editáveis na tela /settings)
+      OPENROUTER_URL: ${OPENROUTER_URL:-https://openrouter.ai/api/v1}
+      OPENROUTER_READER_MODEL: ${OPENROUTER_READER_MODEL:-google/gemini-2.5-flash}
+      OPENROUTER_GENERATOR_MODEL: ${OPENROUTER_GENERATOR_MODEL:-deepseek/deepseek-v4.1-flash}
+      OPENROUTER_REFERER: ${FRONTEND_URL}
+      OPENROUTER_TITLE: Flashcards
+      # Bucket (MinIO). Em prod a API lê APP_S3_* (ver application-prod.yaml).
+      APP_S3_ENDPOINT: http://minio:9000
+      APP_S3_ACCESS_KEY: ${MINIO_ROOT_USER:-minioadmin}
+      APP_S3_SECRET_KEY: ${MINIO_ROOT_PASSWORD:-minioadmin}
+      APP_S3_BUCKET: ${S3_BUCKET_NAME:-flashcards}
+      APP_S3_REGION: us-east-1
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_started
+
+  web:
+    build:
+      context: ./flashcards-web
+      dockerfile: Dockerfile
+      args:
+        # URL da API embutida no bundle (Vite). resolveBaseUrl() anexa /api/v1.
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: flashcards-web
+    ports:
+      - "3000:3000"
+    environment:
+      PORT: 3000
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  miniodata:
