@@ -45,12 +45,14 @@ export function getBaseUrl(): string {
   return baseURL;
 }
 
+// NÃO definir "Content-Type" global aqui: o transformRequest do axios, ao ver
+// um Content-Type contendo "application/json" junto de um FormData, converte o
+// FormData em JSON (formDataToJSON) e envia application/json — quebrando o
+// upload multipart de /generations. Sem header global, o axios define
+// application/json para objetos e multipart (com boundary) para FormData.
 export const api: AxiosInstance = axios.create({
   baseURL,
   timeout: 60_000,
-  headers: {
-    "Content-Type": "application/json",
-  },
 });
 
 api.interceptors.request.use((config) => {
