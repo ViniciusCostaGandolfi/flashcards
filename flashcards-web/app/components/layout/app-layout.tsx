@@ -139,9 +139,9 @@ export function AppLayout() {
         <Outlet />
       </main>
 
-      {/* Navegação inferior (mobile-first) */}
+      {/* Navegação inferior (mobile-first) — daisyUI 5 "dock" */}
       <nav
-        className="btm-nav btm-nav-sm z-30 border-t border-base-200 bg-base-100/95 backdrop-blur-md sm:btm-nav-md"
+        className="dock dock-sm z-30 border-t border-base-200 bg-base-100/95 backdrop-blur-md sm:dock-md"
         aria-label="Navegação principal"
       >
         {NAV_ITEMS.map((item) => (
@@ -149,11 +149,11 @@ export function AppLayout() {
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
-              cn(isActive && "active text-primary")
+              cn(isActive && "dock-active text-primary")
             }
           >
             {item.icon}
-            <span className="btm-nav-label text-[11px]">{item.label}</span>
+            <span className="dock-label text-[11px]">{item.label}</span>
           </NavLink>
         ))}
       </nav>

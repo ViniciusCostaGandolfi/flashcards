@@ -73,7 +73,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 placeholder="voce@exemplo.com"
-                className="input input-bordered w-full"
+                className="input  w-full"
                 {...register("email")}
               />
             </FormField>
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 placeholder="Sua senha"
-                className="input input-bordered w-full"
+                className="input  w-full"
                 {...register("password")}
               />
             </FormField>

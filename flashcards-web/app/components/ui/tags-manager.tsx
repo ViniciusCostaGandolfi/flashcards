@@ -89,7 +89,7 @@ export function TagsManager() {
             <input
               type="text"
               placeholder="Nova tag (ex.: biologia)"
-              className="input input-bordered w-full"
+              className="input  w-full"
               aria-label="Nome da nova tag"
               aria-invalid={!!errors.name || undefined}
               {...register("name")}

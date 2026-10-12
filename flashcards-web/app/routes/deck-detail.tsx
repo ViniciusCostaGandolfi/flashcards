@@ -444,7 +444,7 @@ function CardFormDialog({
           {mutation.isError ? <ErrorAlert error={mutation.error} /> : null}
 
           <FormField label="Tipo" required>
-            <select className="select select-bordered w-full" {...register("type")}>
+            <select className="select  w-full" {...register("type")}>
               <option value="CLOZE">{CARD_TYPE_LABEL.CLOZE}</option>
               <option value="TRUE_FALSE">{CARD_TYPE_LABEL.TRUE_FALSE}</option>
               <option value="MULTIPLE_CHOICE">
@@ -465,7 +465,7 @@ function CardFormDialog({
           >
             <textarea
               rows={3}
-              className="textarea textarea-bordered w-full"
+              className="textarea  w-full"
               {...register("question")}
             />
           </FormField>
@@ -473,7 +473,7 @@ function CardFormDialog({
           <FormField label="Resposta" required error={errors.answer?.message}>
             <input
               type="text"
-              className="input input-bordered w-full"
+              className="input  w-full"
               {...register("answer")}
             />
           </FormField>
@@ -485,7 +485,7 @@ function CardFormDialog({
             >
               <textarea
                 rows={4}
-                className="textarea textarea-bordered w-full"
+                className="textarea  w-full"
                 {...register("optionsText")}
               />
             </FormField>
@@ -494,7 +494,7 @@ function CardFormDialog({
           <FormField label="Explicação (opcional)">
             <textarea
               rows={2}
-              className="textarea textarea-bordered w-full"
+              className="textarea  w-full"
               {...register("explanation")}
             />
           </FormField>
@@ -502,7 +502,7 @@ function CardFormDialog({
           <FormField label="Dica (opcional)">
             <input
               type="text"
-              className="input input-bordered w-full"
+              className="input  w-full"
               {...register("hint")}
             />
           </FormField>

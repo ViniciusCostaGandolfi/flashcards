@@ -158,7 +158,7 @@ export default function GeneratePage() {
                   ref={fileInputRef}
                   type="file"
                   accept={ACCEPTED}
-                  className="file-input file-input-bordered w-full"
+                  className="file-input  w-full"
                   onChange={(event) => {
                     setFile(event.target.files?.[0] ?? null);
                     setLocalError(null);
@@ -180,7 +180,7 @@ export default function GeneratePage() {
                 <textarea
                   rows={8}
                   placeholder="Cole aqui o conteúdo que deve virar flashcards..."
-                  className="textarea textarea-bordered w-full"
+                  className="textarea  w-full"
                   {...register("text")}
                 />
               </FormField>
@@ -190,7 +190,7 @@ export default function GeneratePage() {
               <input
                 type="text"
                 placeholder="Ex.: Biologia — Sistema nervoso"
-                className="input input-bordered w-full"
+                className="input  w-full"
                 {...register("title")}
               />
             </FormField>

@@ -119,7 +119,7 @@ export default function SettingsPage() {
               hint="Usado para extrair o conteúdo de imagens e PDFs."
             >
               <select
-                className="select select-bordered w-full"
+                className="select  w-full"
                 {...register("readerModel")}
               >
                 <option value="">Selecione...</option>
@@ -138,7 +138,7 @@ export default function SettingsPage() {
               hint="Usado para criar as perguntas e respostas."
             >
               <select
-                className="select select-bordered w-full"
+                className="select  w-full"
                 {...register("generatorModel")}
               >
                 <option value="">Selecione...</option>
@@ -158,7 +158,7 @@ export default function SettingsPage() {
             >
               <textarea
                 rows={6}
-                className="textarea textarea-bordered w-full"
+                className="textarea  w-full"
                 {...register("basePrompt")}
               />
             </FormField>
@@ -173,7 +173,7 @@ export default function SettingsPage() {
                   type="number"
                   min={1}
                   max={100}
-                  className="input input-bordered w-full"
+                  className="input  w-full"
                   {...register("cardsPerGeneration", { valueAsNumber: true })}
                 />
               </FormField>
@@ -184,7 +184,7 @@ export default function SettingsPage() {
                 error={errors.language?.message}
               >
                 <select
-                  className="select select-bordered w-full"
+                  className="select  w-full"
                   {...register("language")}
                 >
                   {LANGUAGES.map((language) => (
@@ -205,7 +205,7 @@ export default function SettingsPage() {
               <input
                 type="text"
                 placeholder="Ex.: PDFBOX"
-                className="input input-bordered w-full"
+                className="input  w-full"
                 {...register("pdfEngine")}
               />
             </FormField>
