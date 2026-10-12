@@ -57,6 +57,24 @@ class OpenRouterJsonParsingTest {
     }
 
     @Test
+    void parsesOptionalTagsPerCard() {
+        String raw = "{\"cards\":[{\"type\":\"CLOZE\",\"question\":\"q\",\"options\":[],\"answer\":\"a\","
+                + "\"explanation\":null,\"tags\":[\"Biologia\",\"  \",\"Citologia\"]}]}";
+
+        List<GeneratedCard> cards = client.parseCards(raw);
+
+        assertThat(cards).hasSize(1);
+        assertThat(cards.get(0).tags()).containsExactly("Biologia", "Citologia");
+    }
+
+    @Test
+    void cardsWithoutTagsYieldEmptyTags() {
+        String raw = "{\"cards\":[{\"type\":\"CLOZE\",\"question\":\"q\",\"options\":[],\"answer\":\"a\"}]}";
+
+        assertThat(client.parseCards(raw).get(0).tags()).isEmpty();
+    }
+
+    @Test
     void returnsEmptyListOnMalformedJson() {
         assertThat(client.parseCards("isto nao e json")).isEmpty();
         assertThat(client.parseCards("{\"cards\": []}")).isEmpty();

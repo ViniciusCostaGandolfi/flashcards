@@ -2,6 +2,7 @@ package vgandolfi.dev.flashcards.application.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -13,6 +14,7 @@ import vgandolfi.dev.flashcards.domain.model.Card;
 import vgandolfi.dev.flashcards.domain.model.Deck;
 import vgandolfi.dev.flashcards.domain.model.GenerationJob;
 import vgandolfi.dev.flashcards.domain.model.SourceFile;
+import vgandolfi.dev.flashcards.domain.model.Tag;
 import vgandolfi.dev.flashcards.domain.model.User;
 import vgandolfi.dev.flashcards.domain.model.enums.GenerationStatus;
 import vgandolfi.dev.flashcards.domain.model.enums.SourceType;
@@ -28,6 +30,7 @@ import vgandolfi.dev.flashcards.infrastructure.s3.S3Storage;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -57,6 +60,8 @@ class GenerationServiceTest {
     private CardRepository cardRepository;
     @Mock
     private SettingsService settingsService;
+    @Mock
+    private TagService tagService;
     @Mock
     private OpenRouterClient openRouterClient;
     @Mock
@@ -91,7 +96,7 @@ class GenerationServiceTest {
     }
 
     private GeneratedCard card(String type) {
-        return new GeneratedCard(type, "pergunta " + type, List.of(), "resposta", "explicacao");
+        return new GeneratedCard(type, "pergunta " + type, List.of(), "resposta", "explicacao", List.of());
     }
 
     private List<GeneratedCard> fullCards() {
@@ -206,6 +211,27 @@ class GenerationServiceTest {
     }
 
     @Test
+    void processAppliesJobAndCardTags() {
+        GenerationJob job = textJob();
+        when(generationJobRepository.findById(jobId)).thenReturn(Optional.of(job));
+        when(settingsService.requireSettings()).thenReturn(settings());
+        when(openRouterClient.generateCards(anyString(), anyString(), anyString(), anyInt()))
+                .thenReturn(fullCards());
+        Tag tag = new Tag();
+        tag.setId(UUID.randomUUID());
+        tag.setName("Biologia");
+        when(tagService.resolveTags(any())).thenReturn(Set.of(tag));
+        stubPersist();
+
+        generationService.process(jobId, List.of("Biologia"));
+
+        assertThat(job.getStatus()).isEqualTo(GenerationStatus.DONE);
+        ArgumentCaptor<Card> captor = ArgumentCaptor.forClass(Card.class);
+        verify(cardRepository, times(3)).save(captor.capture());
+        assertThat(captor.getAllValues()).allSatisfy(card -> assertThat(card.getTags()).contains(tag));
+    }
+
+    @Test
     void createWithTextPersistsJobAndPublishesEvent() {
         User user = new User();
         user.setId(userId);
@@ -216,7 +242,7 @@ class GenerationServiceTest {
             return saved;
         });
 
-        UUID result = generationService.create(userId, null, null, null, "texto livre", "Meu deck");
+        UUID result = generationService.create(userId, null, null, null, "texto livre", "Meu deck", List.of());
 
         assertThat(result).isEqualTo(jobId);
         verify(s3Storage, never()).uploadBytes(anyString(), any(), anyString());
@@ -240,7 +266,7 @@ class GenerationServiceTest {
             return saved;
         });
 
-        generationService.create(userId, "foto.png", "image/png", bytes, null, null);
+        generationService.create(userId, "foto.png", "image/png", bytes, null, null, List.of());
 
         verify(s3Storage).uploadBytes(startsWith("uploads/" + userId + "/"), eq(bytes), eq("image/png"));
         verify(events).publishEvent(any(GenerationJobCreatedEvent.class));
@@ -252,7 +278,7 @@ class GenerationServiceTest {
         user.setId(userId);
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        assertThatThrownBy(() -> generationService.create(userId, null, null, null, null, null))
+        assertThatThrownBy(() -> generationService.create(userId, null, null, null, null, null, List.of()))
                 .isInstanceOf(BusinessException.class);
     }
 }

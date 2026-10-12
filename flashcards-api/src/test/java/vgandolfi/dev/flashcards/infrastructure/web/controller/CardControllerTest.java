@@ -43,7 +43,7 @@ class CardControllerTest {
 
     private CardResponse response(CardType type) {
         return new CardResponse(cardId, deckId, type, "Pergunta?", "Resposta", "expl", null, 0,
-                List.of("A", "B"), 2.5, 0, 0, LocalDate.now(), null);
+                List.of("A", "B"), List.of("gramatica"), 2.5, 0, 0, LocalDate.now(), null);
     }
 
     @Test
@@ -58,6 +58,19 @@ class CardControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(cardId.toString()))
                 .andExpect(jsonPath("$.type").value("MULTIPLE_CHOICE"));
+    }
+
+    @Test
+    void createWithTagsReturnsTags() throws Exception {
+        when(cardService.create(any())).thenReturn(response(CardType.MULTIPLE_CHOICE));
+
+        mockMvc.perform(post("/api/v1/cards")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"deckId\":\"" + deckId + "\",\"type\":\"MULTIPLE_CHOICE\","
+                                + "\"question\":\"Pergunta?\",\"answer\":\"Resposta\","
+                                + "\"options\":[\"A\",\"B\"],\"tags\":[\"Gramatica\",\"gramatica\"]}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.tags[0]").value("gramatica"));
     }
 
     @Test
