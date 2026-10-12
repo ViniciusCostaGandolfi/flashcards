@@ -42,8 +42,11 @@ app:
     referer: ${OPENROUTER_REFERER:}
     title: ${OPENROUTER_TITLE:Flashcards}
   s3:
-    endpoint: ${APP_S3_ENDPOINT}
-    access-key: ${APP_S3_ACCESS_KEY}
-    secret-key: ${APP_S3_SECRET_KEY}
-    bucket: ${APP_S3_BUCKET:flashcards}
-    region: ${APP_S3_REGION:us-east-1}
+    # Aceita os nomes S3_* (os mesmos do dev/base) e, por compatibilidade,
+    # APP_S3_*. Sem S3_ENDPOINT/credenciais o boot falha com mensagem clara
+    # (ver S3Config), em vez de passar o placeholder literal para URI.create.
+    endpoint: ${S3_ENDPOINT:${APP_S3_ENDPOINT:}}
+    access-key: ${S3_ACCESS_KEY:${APP_S3_ACCESS_KEY:}}
+    secret-key: ${S3_SECRET_KEY:${APP_S3_SECRET_KEY:}}
+    bucket: ${S3_BUCKET_NAME:${APP_S3_BUCKET:flashcards}}
+    region: ${S3_REGION:${APP_S3_REGION:us-east-1}}

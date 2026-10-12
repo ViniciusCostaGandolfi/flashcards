@@ -35,9 +35,9 @@ public class S3Config {
     @Bean
     public S3Client s3Client() {
         S3Client client = S3Client.builder()
-                .endpointOverride(URI.create(s3Properties.endpoint()))
+                .endpointOverride(URI.create(endpoint()))
                 .credentialsProvider(credentials())
-                .region(Region.of(s3Properties.region()))
+                .region(Region.of(region()))
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
                         .build())
@@ -49,18 +49,44 @@ public class S3Config {
     @Bean
     public S3Presigner s3Presigner() {
         return S3Presigner.builder()
-                .endpointOverride(URI.create(s3Properties.endpoint()))
+                .endpointOverride(URI.create(endpoint()))
                 .credentialsProvider(credentials())
-                .region(Region.of(s3Properties.region()))
+                .region(Region.of(region()))
                 .serviceConfiguration(S3Configuration.builder()
                         .pathStyleAccessEnabled(true)
                         .build())
                 .build();
     }
 
+    /**
+     * Endpoint validado: falha rapido com mensagem clara quando a variavel nao
+     * foi definida (o placeholder nao resolvido chega como "${S3_ENDPOINT}" e
+     * estouraria um {@code URISyntaxException} críptico em {@code URI.create}).
+     */
+    private String endpoint() {
+        String endpoint = s3Properties.endpoint();
+        if (!StringUtils.hasText(endpoint) || endpoint.contains("${")) {
+            throw new IllegalStateException(
+                    "Bucket S3 nao configurado. Defina a variavel de ambiente "
+                    + "S3_ENDPOINT (ex.: https://s3.exemplo.com). Valor atual: '" + endpoint + "'");
+        }
+        return endpoint;
+    }
+
+    private String region() {
+        String region = s3Properties.region();
+        return (StringUtils.hasText(region) && !region.contains("${")) ? region : "us-east-1";
+    }
+
     private StaticCredentialsProvider credentials() {
-        return StaticCredentialsProvider.create(
-                AwsBasicCredentials.create(s3Properties.accessKey(), s3Properties.secretKey()));
+        String accessKey = s3Properties.accessKey();
+        String secretKey = s3Properties.secretKey();
+        if (!StringUtils.hasText(accessKey) || !StringUtils.hasText(secretKey)
+                || accessKey.contains("${") || secretKey.contains("${")) {
+            throw new IllegalStateException(
+                    "Credenciais do bucket nao configuradas. Defina S3_ACCESS_KEY e S3_SECRET_KEY.");
+        }
+        return StaticCredentialsProvider.create(AwsBasicCredentials.create(accessKey, secretKey));
     }
 
     /**
